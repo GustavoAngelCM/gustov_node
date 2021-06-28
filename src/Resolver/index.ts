@@ -1,14 +1,57 @@
-// Copyright 2021 Gustavo Cerezo
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+import { ApolloError } from 'apollo-server';
+import { MenuConcrete } from '../ConcreteB/MenuConcrete';
+import { PlateConcrete } from "../ConcreteB/PlateConcrete"
+import { DishDirector } from "../Director/DishDirector"
+import { MenuDirector } from '../Director/MenuDirector';
 
+export const resolvers = {
+  Query: {
+    getDishes: () => []
+  },
+  Mutation: {
+    // mutation create
+    newDish: async (_: any, { dish }: any, ctx: any) => {
+      try {
+        const dishDirector = new DishDirector()
+        const dishI = new PlateConcrete(dish.name, dish.detail)
+        dishI.generateUuid();
+        dishI.dateNow();
+        dishI.resetPrice();
+        await dishDirector.setDish(dishI, dishI.getDish());
+        if (!dish.price.offer_price && !dish.price.before_price) {
+          await dishDirector.basicDish(dish.price.now_price);
+        }
+        if (dish.price.offer_price && !dish.price.before_price) {
+          await dishDirector.offerDish(dish.price.now_price, dish.price.offer_price);
+        }
+        if (!dish.price.offer_price && dish.price.before_price) {
+          await dishDirector.beforeDish(dish.price.now_price, dish.price.befor_price);
+        }
+        if (dish.price.offer_price && dish.price.before_price) {
+          await dishDirector.beforeAndOfferDish(dish.price.now_price, dish.price.offer_price, dish.price.befor_price)
+        }
+        return dishI.getDish();
+      } catch (error) {
+        throw new ApolloError(`Dish - ${error}`)
+      }
+    },
+    registerMenu: async (_: any, { menu }: any, ctx: any) => {
+      try {
+        const menuDirector = new MenuDirector();
+        const menuI = new MenuConcrete(menu.date_menu);
+        menuI.generateUuid();
+        menuI.dateNow();
+        menuDirector.setMenu(menuI, menuI.getMenu());
+        const menus = menu.dishes.map(async (dishForMenu: any) => {
+          const dish = await DishDirector.getDish(dishForMenu.dish);
+          return menuDirector.addDishForMenu(dish, dishForMenu.prepared_quantity)
+        });
+        await Promise.all(menus);
+        menuDirector.addDishesForMenu();
+        return menuI.getMenu()
+      } catch (error) {
+        throw new ApolloError(`Menu - ${error}`)
+      }
+    }
+  }
+}
