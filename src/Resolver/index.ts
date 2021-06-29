@@ -6,7 +6,14 @@ import { MenuDirector } from '../Director/MenuDirector';
 
 export const resolvers = {
   Query: {
-    getDishes: () => []
+    getDishes: () => {
+      try {
+        const dishDirector = new DishDirector()
+        return dishDirector.getDishesAsynchronous()
+      } catch (error) {
+        throw new ApolloError(`Get Dish - ${error}`)
+      }
+    }
   },
   Mutation: {
     // mutation create

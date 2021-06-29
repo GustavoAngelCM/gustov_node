@@ -146,6 +146,23 @@ class DishDirector {
     });
     return dishI;
   }
+
+  async getDishesAsynchronous(): Promise<Dish[]> {
+    const dishes: Dish[] = [];
+    const dishesAsynchronous = await this._S_DISH__.get()
+    for await (const dishData of dishesAsynchronous.docs) {
+      const _dish = dishData.data()
+      const priceData = await _S_PRICE_(_S_DISH_.doc(dishData.id)).get();
+      const dishI = new PlateConcrete(_dish.name, _dish.detail)
+      dishI.getDish().setId(dishData.id) 
+      dishI.getDish().setCreatedAt(_dish.created_at) 
+      dishI.getDish().setUpdatedAt(_dish.updated_at) 
+      dishI.resetPrice()
+      DishDirector.getDishAddPrice(dishI, priceData);
+      dishes.push(dishI.getDish())
+    }
+    return dishes;
+  }
 }
 
 export {
