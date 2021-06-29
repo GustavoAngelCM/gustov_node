@@ -1,10 +1,8 @@
 import { gql } from 'apollo-server';
 
 export const typeDefs = gql`
-  type Date {
-    timestamp: Int!
-  }
 
+  # type definitions
   type Price {
     now_price: Float!
     offer_price: Float
@@ -16,21 +14,25 @@ export const typeDefs = gql`
     name: String!
     detail: String
     price: Price!
-    created_at: Date
+    created_at: Float
+    updated_at: Float
   }
 
   type DishesForMenu {
     id: ID
     dish: Dish
     prepared_quantity: Int
+    created_at: Float
+    updated_at: Float
   }
 
   type Menu {
     id: ID
-    date_menu: Date!
+    date_menu: Float!
     dishes: [DishesForMenu!]!
     state: Boolean
-    created_at: Date
+    created_at: Float
+    updated_at: Float
   }
 
   type Order {
@@ -39,7 +41,8 @@ export const typeDefs = gql`
     amount: Int!
     description: String
     sub_total: Float!
-    created_at: Date
+    created_at: Float
+    updated_at: Float
   }
 
   type Sale {
@@ -47,7 +50,8 @@ export const typeDefs = gql`
     orders: [Order!]!
     total: Float!
     cancelled: Boolean
-    created_at: Date
+    created_at: Float
+    updated_at: Float
   }
 
   type SalesHistory {
@@ -57,6 +61,61 @@ export const typeDefs = gql`
     status_in_transaction: Boolean
     amount: Int
     price_involved: Float
-    created_at: Date
+    created_at: Float
+    updated_at: Float
+  }
+
+  # input rules
+  input PriceI {
+    now_price: Float!
+    offer_price: Float
+    before_price: Float
+  }
+
+  input DishI {
+    name: String!
+    detail: String
+    price: PriceI!
+  }
+
+  input DishesForMenuI {
+    dish: ID!
+    prepared_quantity: Int!
+  }
+
+  input MenuI {
+    date_menu: Float!
+    dishes: [DishesForMenuI!]!
+  }
+
+  input OrderI {
+    dish: DishI!
+    amount: Int!
+    description: String
+    sub_total: Float!
+  }
+
+  input SaleI {
+    orders: [OrderI!]!
+    total: Float!
+  }
+
+  input SalesHistoryI {
+    sale_ref: String
+    menu_ref: String
+    status_in_transaction: Boolean
+    amount: Int
+    price_involved: Float
+  }
+  
+  # query
+  type Query {
+    getDishes: [Dish]
+  }
+
+  # mutations
+  type Mutation {
+    newDish(dish: DishI): Dish
+    registerMenu(menu: MenuI): Menu
   }
 `;

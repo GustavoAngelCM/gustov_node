@@ -15,7 +15,8 @@
     "apollo-server": "^2.25.1",
     "firebase-admin": "^9.9.0",
     "graphql": "^15.5.0",
-    "node-ts-uuid": "^1.0.8"
+    "node-ts-uuid": "^1.0.8",
+    "uuidv4": "^6.2.10"
   },
   "devDependencies": {
     "nodemon": "^2.0.7",
